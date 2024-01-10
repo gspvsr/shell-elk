@@ -53,8 +53,8 @@ validate $? "Uncommenting http.port"
 sed -i -e 's/^#network\.host: .*/network.host: 0.0.0.0/' "$ELASTICSEARCH_CONFIG" >> "$LOGFILE" 2>> "$LOGFILE"
 validate $? "Changing the default network host"
 
-# Add a line under the Bootstrap section (second row)
-sed -i -e '/^#bootstrap\./a\bootstrap.type: single-node' "$ELASTICSEARCH_CONFIG" >> "$LOGFILE" 2>> "$LOGFILE"
+# Add a line under the Bootstrap section (third row)
+sed -i -e '/^#discovery.seed_hosts:\./a\discovery.type: single-node' "$ELASTICSEARCH_CONFIG" >> "$LOGFILE" 2>> "$LOGFILE"
 validate $? "Add a line under the Bootstrap section"
 
 # Restart Elasticsearch

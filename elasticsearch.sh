@@ -7,6 +7,7 @@ N="\e[0m"
 
 TIMESTAMP=$(date +%F-%H-%M-%S)
 LOGFILE="/tmp/$0-$TIMESTAMP.log"
+ELASTICSEARCH_CONFIG="/etc/elasticsearch/elasticsearch.yml"
 
 echo "script started executing at $TIMESTAMP" >> "$LOGFILE"
 
@@ -39,13 +40,15 @@ VALIDATE $? "Copying the elasticsearch.repo"
 yum install elasticsearch -y >> "$LOGFILE" 2>> "$LOGFILE"
 VALIDATE $? "Installing Elasticsearch"
 
-sed -i -e 's/^#http\.port: 9200/http.port: 9200/' "$ELASTICSEARCH_CONFIG" "$LOGFILE" 2>> "$LOGFILE"
-VALIDATE $? "uncommenting"
+# Uncomment http.port: 9200
+sed -i -e 's/^#http\.port: 9200/http.port: 9200/' "$ELASTICSEARCH_CONFIG" >> "$LOGFILE" 2>> "$LOGFILE"
+VALIDATE $? "Uncommenting http.port"
 
-sed -i -e 's/^#network\.host: .*/network.host: 0.0.0.0/' "$ELASTICSEARCH_CONFIG" "$LOGFILE" 2>> "$LOGFILE"
-VALIDATE $? "changing the default network host"
+# Change the default network host
+sed -i -e 's/^#network\.host: .*/network.host: 0.0.0.0/' "$ELASTICSEARCH_CONFIG" >> "$LOGFILE" 2>> "$LOGFILE"
+VALIDATE $? "Changing the default network host"
 
-echo "discovery.type: single-node" >> "$ELASTICSEARCH_CONFIG" "$LOGFILE" 2>> "$LOGFILE"
+echo "discovery.type: single-node" >> "$ELASTICSEARCH_CONFIG" >> "$LOGFILE" 2>> "$LOGFILE"
 VALIDATE $? "Add a line under the discovery section"
 
 systemctl restart elasticsearch >> "$LOGFILE" 2>> "$LOGFILE"

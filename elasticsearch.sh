@@ -36,11 +36,17 @@ VALIDATE $? "Installing the Java-11 Open JDK Package"
 cp elasticsearch.repo /etc/yum.repos.d/elasticsearch.repo >> "$LOGFILE" 2>> "$LOGFILE"
 VALIDATE $? "Copying the elasticsearch.repo"
 
-cp elasticsearch.yml /etc/elasticsearch/
-VALIDATE $? "Configuring the elasticsearch.yaml"
-
 yum install elasticsearch -y >> "$LOGFILE" 2>> "$LOGFILE"
 VALIDATE $? "Installing Elasticsearch"
+
+sed -i -e 's/^#http\.port: 9200/http.port: 9200/' "$ELASTICSEARCH_CONFIG" "$LOGFILE" 2>> "$LOGFILE"
+VALIDATE $? "uncommenting"
+
+sed -i -e 's/^#network\.host: .*/network.host: 0.0.0.0/' "$ELASTICSEARCH_CONFIG" "$LOGFILE" 2>> "$LOGFILE"
+VALIDATE $? "changing the default network host"
+
+echo "discovery.type: single-node" >> "$ELASTICSEARCH_CONFIG" "$LOGFILE" 2>> "$LOGFILE"
+VALIDATE $? "Add a line under the discovery section"
 
 systemctl restart elasticsearch >> "$LOGFILE" 2>> "$LOGFILE"
 VALIDATE $? "Restarting Elasticsearch"

@@ -36,7 +36,7 @@ VALIDATE $? "Installing the Java-11 Open JDK Package"
 cp elasticsearch.repo /etc/yum.repos.d/elasticsearch.repo >> "$LOGFILE" 2>> "$LOGFILE"
 VALIDATE $? "Copying the elasticsearch.repo"
 
-cp elasticsearch.yml /etc/elasticsearch/elasticsearch.yml
+cp elasticsearch.yml /etc/elasticsearch/
 VALIDATE $? "Configuring the elasticsearch.yaml"
 
 yum install elasticsearch -y >> "$LOGFILE" 2>> "$LOGFILE"

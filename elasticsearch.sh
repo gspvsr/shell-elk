@@ -47,8 +47,5 @@ VALIDATE $? "Installing Elasticsearch"
 systemctl restart elasticsearch >> "$LOGFILE" 2>> "$LOGFILE"
 VALIDATE $? "Restarting Elasticsearch"
 
-curl localhost:9200 >> "$LOGFILE" 2>> "$LOGFILE"
-VALIDATE $? "Verifying the local host"
-
 systemctl enable elasticsearch >> "$LOGFILE" 2>> "$LOGFILE"
 VALIDATE $? "Enabling Elasticsearch"

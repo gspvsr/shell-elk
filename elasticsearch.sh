@@ -9,50 +9,58 @@ TIMESTAMP=$(date +%F-%H-%M-%S)
 LOGFILE="/tmp/$0-$TIMESTAMP.log"
 ELASTICSEARCH_CONFIG="/etc/elasticsearch/elasticsearch.yml"
 
-echo "script started executing at $TIMESTAMP" >> "$LOGFILE"
+log() {
+    echo -e "$1" >> "$LOGFILE"
+}
 
-VALIDATE(){
-    if [ $1 -ne 0 ]
-    then 
+validate() {
+    if [ $1 -ne 0 ]; then
         echo -e "$2...$R FAILED $N"
         exit 1
-    else 
+    else
         echo -e "$2....$G SUCCESS $N"
     fi
 }
 
-USERID=$(id -u)
+log "Script started executing at $TIMESTAMP"
 
-if [ $USERID -ne 0 ]
-then
-    echo "ERROR :: Please install with Root Access"
+# Check if run as root
+USERID=$(id -u)
+if [ $USERID -ne 0 ]; then
+    log "ERROR :: Please run with Root Access"
     exit 1
 else
-    echo "you are root user"
-fi 
+    log "You are root user"
+fi
 
+# Install Java 11 OpenJDK
 yum install java-11-openjdk-devel -y >> "$LOGFILE" 2>> "$LOGFILE"
-VALIDATE $? "Installing the Java-11 Open JDK Package"
+validate $? "Installing the Java-11 Open JDK Package"
 
+# Copy elasticsearch.repo
 cp elasticsearch.repo /etc/yum.repos.d/elasticsearch.repo >> "$LOGFILE" 2>> "$LOGFILE"
-VALIDATE $? "Copying the elasticsearch.repo"
+validate $? "Copying the elasticsearch.repo"
 
+# Install Elasticsearch
 yum install elasticsearch -y >> "$LOGFILE" 2>> "$LOGFILE"
-VALIDATE $? "Installing Elasticsearch"
+validate $? "Installing Elasticsearch"
 
 # Uncomment http.port: 9200
 sed -i -e 's/^#http\.port: 9200/http.port: 9200/' "$ELASTICSEARCH_CONFIG" >> "$LOGFILE" 2>> "$LOGFILE"
-VALIDATE $? "Uncommenting http.port"
+validate $? "Uncommenting http.port"
 
 # Change the default network host
 sed -i -e 's/^#network\.host: .*/network.host: 0.0.0.0/' "$ELASTICSEARCH_CONFIG" >> "$LOGFILE" 2>> "$LOGFILE"
-VALIDATE $? "Changing the default network host"
+validate $? "Changing the default network host"
 
-echo "discovery.type: single-node" >> "$ELASTICSEARCH_CONFIG" >> "$LOGFILE" 2>> "$LOGFILE"
-VALIDATE $? "Add a line under the discovery section"
+# Add a line under the Bootstrap section (second row)
+sed -i -e '/^#bootstrap\./a\bootstrap.type: single-node' "$ELASTICSEARCH_CONFIG" >> "$LOGFILE" 2>> "$LOGFILE"
+validate $? "Add a line under the Bootstrap section"
 
+# Restart Elasticsearch
 systemctl restart elasticsearch >> "$LOGFILE" 2>> "$LOGFILE"
-VALIDATE $? "Restarting Elasticsearch"
+validate $? "Restarting Elasticsearch"
 
+# Enable Elasticsearch
 systemctl enable elasticsearch >> "$LOGFILE" 2>> "$LOGFILE"
-VALIDATE $? "Enabling Elasticsearch"
+validate $? "Enabling Elasticsearch"
